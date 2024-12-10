@@ -293,9 +293,11 @@ void handleFileUpload() {
     server.send(500, "text/html", "Error abriendo archivo para escribir.");
     return;
   }
-
+  file.write(upload.buf, upload.currentSize);
+  
   while (upload.status == UPLOAD_FILE_WRITE) {
     file.write(upload.buf, upload.currentSize);
+    Serial.println("hola");
   }
 
   if (upload.status == UPLOAD_FILE_END) {
@@ -574,6 +576,7 @@ void handleFileContent() {
     if (SPIFFS.exists(fileName)) {
       File file = SPIFFS.open(fileName, "r");
       String content = file.readString();
+      Serial.println(content);
       file.close();
 
       String html = R"rawliteral(
