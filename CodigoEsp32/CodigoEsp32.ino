@@ -316,49 +316,31 @@ char *generateRandomFileName()
 /**
  * Maneja la subida de archivos y guarda el archivo en SPIFFS.
  */
-void handleFileUpload() {
+void handleFileUpload()
+{
   HTTPUpload &upload = server.upload();
 
   File file = SPIFFS.open("/" + upload.filename, "w");
 
-  if (upload.status == UPLOAD_FILE_START) {
-    Serial.println("File upload started: " + upload.filename);
-  }
+  Serial.print("Received file name: " + upload.filename);
 
-  while (upload.status == UPLOAD_FILE_WRITE) {
+  file.write(upload.buf, upload.currentSize);
+
+  file.write(upload.buf, upload.currentSize);
+  while (upload.status == UPLOAD_FILE_WRITE)
     file.write(upload.buf, upload.currentSize);
-  }
 
-  if (upload.status == UPLOAD_FILE_END) {
+  if (upload.status == UPLOAD_FILE_END)
+  {
+    Serial.print("Received file size: ");
+    Serial.println(file.size());
     file.close();
-    Serial.println("File upload completed: " + upload.filename);
-    String html = R"rawliteral(
-<!DOCTYPE HTML>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Archivo Subido</title>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f7f7f7; color: #333; margin: 0; padding: 20px; text-align: center; }
-    h1 { color: #4CAF50; }
-    p { font-size: 18px; }
-    a { color: #4CAF50; text-decoration: none; font-size: 18px; }
-    a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <h1>Archivo Subido Correctamente</h1>
-  <p>El archivo "<strong>)rawliteral" + upload.filename + R"rawliteral(</strong>" se ha subido correctamente.</p>
-  <a href="/">Volver a la página principal</a>
-</body>
-</html>
-)rawliteral";
-    server.send(200, "text/html", html);
-  } else if (upload.status == UPLOAD_FILE_ABORTED) {
-    server.send(500, "text/html", "<h1>Error</h1><p>Se ha producido un error durante la carga del archivo.</p><a href='/'>Volver</a>");
+    fileReadyToWrite = true;
+    server.send(200, "text/html", "<h1>Archivo subido correctamente</h1><br><a href='/'>Volver</a>");
   }
+  // free(uploadedFilePath);
 }
+
 
 
 void listFiles()
